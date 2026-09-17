@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bio Rewrite Tool — Socials by Lucybelle</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/index.html" style="text-decoration:none;color:inherit;">
+    <div class="brand">socials <em>by</em> lucybelle</div>
+    <div class="tagline">Your Socials, Sorted.</div>
+  </a>
+  <a class="header-cta" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Call</a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Free Tool · Fix</div>
+  <h1>Bio Rewrite Tool</h1>
+  <p>Your bio is often the only chance you get to tell a stranger what you do before they decide to keep scrolling or click through. Let's fix it.</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="eyebrow-mini"><span class="glyph">✦</span>The details</div>
+    <div class="field"><label>Your current bio</label><textarea id="currentBio" placeholder="Paste it exactly as it reads now"></textarea></div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Industry</label>
+        <input type="text" id="industry" placeholder="e.g. beauty, real estate, coaching">
+        <div class="chip-hint" data-target="industry">Popular:
+          <button type="button" class="chip-pick">Beauty</button>·
+          <button type="button" class="chip-pick">Real Estate</button>·
+          <button type="button" class="chip-pick">Coaching</button>
+        </div>
+      </div>
+      <div class="field"><label>Who you help</label><input type="text" id="whoTheyHelp" placeholder="e.g. busy tradies, salon owners"></div>
+    </div>
+    <div class="error-msg" id="errMsg"></div>
+    <button class="generate-btn" id="genBtn" onclick="runRewrite()">Rewrite My Bio →</button>
+
+    <div class="loading-state" id="loadingState">
+      <div class="loading-title">Rewriting your bio…</div>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="card">
+      <div class="result-eyebrow"><span class="glyph">✦</span>Your rewritten bio</div>
+      <div class="result-block"><button class="btn-copy" onclick="copyText('rewrittenBio')">Copy</button><div class="result-text" id="rewrittenBio"></div></div>
+      <div class="result-eyebrow"><span class="glyph">◇</span>Why this works</div>
+      <div class="result-block"><div class="result-text serif-italic" id="whyItWorks"></div></div>
+    </div>
+    <div class="locked-block">
+      <div class="lock-title" id="lockedTeaser"></div>
+      <p>One good line is a start. A fully optimised profile, bio, highlights, pinned posts, and link, is what gets built for every client.</p>
+      <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner">
+  <div class="cta-eyebrow">One line fixed. What about the rest?</div>
+  <h2>Your whole profile deserves this treatment.</h2>
+  <p>Bio, highlights, pinned posts, grid strategy, all of it working together. That's what Socials by Lucybelle builds.</p>
+  <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+</div>
+
+<footer>Socials by Lucybelle &middot; <a href="https://socialsbylucybelle.com" target="_blank" rel="noopener">socialsbylucybelle.com</a></footer>
+
+<script src="/assets/common.js"></script>
+<script>
+async function runRewrite() {
+  const errEl = document.getElementById('errMsg');
+  errEl.classList.remove('show');
+  const currentBio = document.getElementById('currentBio').value.trim();
+  const industry = document.getElementById('industry').value.trim();
+  const whoTheyHelp = document.getElementById('whoTheyHelp').value.trim();
+
+  if (!currentBio) { errEl.textContent = 'Please paste your current bio first.'; errEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('genBtn');
+  const loadingEl = document.getElementById('loadingState');
+  btn.disabled = true; btn.textContent = 'Rewriting…';
+  loadingEl.classList.add('show');
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool: 'bio', currentBio, industry, whoTheyHelp })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    document.getElementById('rewrittenBio').textContent = data.rewritten_bio || '';
+    document.getElementById('whyItWorks').textContent = data.why_it_works || '';
+    document.getElementById('lockedTeaser').textContent = data.locked_teaser || '';
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    errEl.textContent = 'Something went wrong rewriting your bio. Please try again in a moment.';
+    errEl.classList.add('show');
+    console.error(err);
+  }
+  loadingEl.classList.remove('show');
+  btn.disabled = false; btn.textContent = 'Rewrite My Bio →';
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+</script>
+</body>
+</html>

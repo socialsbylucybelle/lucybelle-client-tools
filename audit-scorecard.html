@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Audit Scorecard — Socials by Lucybelle</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/index.html" style="text-decoration:none;color:inherit;">
+    <div class="brand">socials <em>by</em> lucybelle</div>
+    <div class="tagline">Your Socials, Sorted.</div>
+  </a>
+  <a class="header-cta" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Call</a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Free Tool · Diagnose</div>
+  <h1>Instagram Audit Scorecard</h1>
+  <p>A scored, honest look at where your profile stands right now, across the five things that actually decide whether someone follows, enquires, or scrolls past.</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="eyebrow-mini"><span class="glyph">◎</span>Tell us about your account</div>
+    <div class="field">
+      <label>Industry / what your business does</label>
+      <input type="text" id="industry" placeholder="e.g. beauty salon, real estate agent, run coach">
+      <div class="chip-hint" data-target="industry">Popular:
+        <button type="button" class="chip-pick">Beauty</button>·
+        <button type="button" class="chip-pick">Real Estate</button>·
+        <button type="button" class="chip-pick">Coaching</button>·
+        <button type="button" class="chip-pick">Wellness</button>·
+        <button type="button" class="chip-pick">Trades</button>
+      </div>
+    </div>
+    <div class="field"><label>Paste your current Instagram bio</label><textarea id="bio" placeholder="Paste it exactly as it reads on your profile"></textarea></div>
+
+    <hr class="divider-line">
+
+    <div class="field">
+      <label>How often do you post right now?</label>
+      <div class="pill-group" data-target="postingFrequency">
+        <button type="button" class="pill-option" data-value="Rarely, whenever I remember">Rarely</button>
+        <button type="button" class="pill-option" data-value="Once a week">Weekly</button>
+        <button type="button" class="pill-option" data-value="A few times a week">Few times a week</button>
+        <button type="button" class="pill-option" data-value="Daily">Daily</button>
+      </div>
+      <input type="hidden" id="postingFrequency">
+    </div>
+    <div class="field">
+      <label>Main goal for your socials</label>
+      <div class="pill-group" data-target="businessGoal">
+        <button type="button" class="pill-option" data-value="More enquiries">More enquiries</button>
+        <button type="button" class="pill-option" data-value="More followers">More followers</button>
+        <button type="button" class="pill-option" data-value="Brand awareness">Brand awareness</button>
+        <button type="button" class="pill-option" data-value="Bookings / sales">Bookings / sales</button>
+      </div>
+      <input type="hidden" id="businessGoal">
+    </div>
+
+    <div class="error-msg" id="errMsg"></div>
+    <button class="generate-btn" id="genBtn" onclick="runAudit()">Get My Score →</button>
+
+    <div class="loading-state" id="loadingState">
+      <div class="loading-title">Scoring your profile…</div>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="card">
+      <div class="score-hero">
+        <div class="score-number" id="scoreNumber">–</div>
+        <div class="score-outof">out of 100</div>
+        <div class="score-grade" id="scoreGrade">–</div>
+        <div class="score-accent-line"></div>
+      </div>
+      <div id="categories" style="margin-top:20px;"></div>
+    </div>
+    <div class="card">
+      <div class="result-eyebrow"><span class="glyph">✦</span>Two quick wins, starting today</div>
+      <div id="quickWins"></div>
+    </div>
+    <div class="locked-block">
+      <div class="lock-title" id="lockedTeaser"></div>
+      <p>This score shows you where things stand. The full growth strategy, the content plan, and the fix for every category above, is what a Clarity Call is for.</p>
+      <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner">
+  <div class="cta-eyebrow">Ready for more than a score?</div>
+  <h2>Let's fix what's actually holding you back.</h2>
+  <p>A Socials by Lucybelle client doesn't just know what's wrong, it gets handled, every category, every week.</p>
+  <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+</div>
+
+<footer>Socials by Lucybelle &middot; <a href="https://socialsbylucybelle.com" target="_blank" rel="noopener">socialsbylucybelle.com</a></footer>
+
+<script src="/assets/common.js"></script>
+<script>
+async function runAudit() {
+  const errEl = document.getElementById('errMsg');
+  errEl.classList.remove('show');
+  const industry = document.getElementById('industry').value.trim();
+  const bio = document.getElementById('bio').value.trim();
+  const postingFrequency = document.getElementById('postingFrequency').value.trim();
+  const businessGoal = document.getElementById('businessGoal').value.trim();
+
+  if (!bio) { errEl.textContent = 'Please paste your bio so the audit has something to score.'; errEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('genBtn');
+  const loadingEl = document.getElementById('loadingState');
+  btn.disabled = true; btn.textContent = 'Scoring…';
+  loadingEl.classList.add('show');
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool: 'audit', industry, bio, postingFrequency, businessGoal })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderResults(data);
+  } catch (err) {
+    errEl.textContent = 'Something went wrong generating your score. Please try again in a moment.';
+    errEl.classList.add('show');
+    console.error(err);
+  }
+  loadingEl.classList.remove('show');
+  btn.disabled = false; btn.textContent = 'Get My Score →';
+}
+
+function renderResults(d) {
+  document.getElementById('scoreNumber').textContent = d.overall_score;
+  document.getElementById('scoreGrade').textContent = d.grade;
+
+  const catEl = document.getElementById('categories');
+  catEl.innerHTML = (d.categories || []).map(c => `
+    <div class="category-row">
+      <div class="category-name">${escapeHtml(c.name)}</div>
+      <div class="category-bar-wrap"><div class="category-bar" style="width:${c.score * 10}%"></div></div>
+      <div class="category-score">${c.score}/10</div>
+    </div>
+    <div style="font-size:12px;color:#8A8078;padding-bottom:10px;">${escapeHtml(c.note)}</div>
+  `).join('');
+
+  const winsEl = document.getElementById('quickWins');
+  winsEl.innerHTML = (d.quick_wins || []).map((w, i) => `
+    <div class="result-block"><div class="result-text"><strong>${i + 1}.</strong> ${escapeHtml(w)}</div></div>
+  `).join('');
+
+  document.getElementById('lockedTeaser').textContent = d.locked_teaser || '';
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>

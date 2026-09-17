@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Idea, Five Formats — Socials by Lucybelle</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/index.html" style="text-decoration:none;color:inherit;">
+    <div class="brand">socials <em>by</em> lucybelle</div>
+    <div class="tagline">Your Socials, Sorted.</div>
+  </a>
+  <a class="header-cta" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Call</a>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Free Tool · Create</div>
+  <h1>One Idea, Five Formats</h1>
+  <p>You don't need five new ideas this week. You need one good idea, used well. Drop in a tip or a common client question and see it start to take shape.</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="eyebrow-mini"><span class="glyph">◈</span>Give us the raw material</div>
+    <div class="field"><label>One tip, client question, or common misconception in your industry</label><textarea id="oneIdea" placeholder="e.g. clients always ask why their quote seems higher than expected"></textarea></div>
+    <div class="field">
+      <label>Industry / niche</label>
+      <input type="text" id="industry" placeholder="e.g. beauty, real estate, coaching">
+      <div class="chip-hint" data-target="industry">Popular:
+        <button type="button" class="chip-pick">Beauty</button>·
+        <button type="button" class="chip-pick">Real Estate</button>·
+        <button type="button" class="chip-pick">Coaching</button>
+      </div>
+    </div>
+    <div class="error-msg" id="errMsg"></div>
+    <button class="generate-btn" id="genBtn" onclick="runFive()">Shape My Idea →</button>
+
+    <div class="loading-state" id="loadingState">
+      <div class="loading-title">Shaping your content…</div>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="card">
+      <div class="result-eyebrow"><span class="glyph">✦</span>Your caption</div>
+      <div class="result-block"><button class="btn-copy" onclick="copyText('caption')">Copy</button><div class="result-text" id="caption"></div></div>
+      <div class="result-eyebrow"><span class="glyph">◈</span>Your carousel outline</div>
+      <div class="result-block"><button class="btn-copy" onclick="copyText('carouselOutline')">Copy</button><div class="result-text" id="carouselOutline"></div></div>
+    </div>
+    <div class="card">
+      <div class="result-eyebrow"><span class="glyph">◇</span>And this same idea also becomes...</div>
+      <div id="teasedFormats"></div>
+    </div>
+    <div class="locked-block">
+      <div class="lock-title" id="lockedTeaser"></div>
+      <p>Two formats down, three fully written formats to go, every week, for every idea. That's the system a Socials by Lucybelle client never has to think about.</p>
+      <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner">
+  <div class="cta-eyebrow">Imagine this, every idea, every week.</div>
+  <h2>Content that never runs dry.</h2>
+  <p>A full month of posts and stories, planned, written, and scheduled, so you never stare at a blank caption box again.</p>
+  <a class="cta-btn" href="https://calendly.com/lucysedlacek/30min" target="_blank" rel="noopener">Book a Free Clarity Call</a>
+</div>
+
+<footer>Socials by Lucybelle &middot; <a href="https://socialsbylucybelle.com" target="_blank" rel="noopener">socialsbylucybelle.com</a></footer>
+
+<script src="/assets/common.js"></script>
+<script>
+async function runFive() {
+  const errEl = document.getElementById('errMsg');
+  errEl.classList.remove('show');
+  const oneIdea = document.getElementById('oneIdea').value.trim();
+  const industry = document.getElementById('industry').value.trim();
+
+  if (!oneIdea) { errEl.textContent = 'Please add a tip or question to shape into content.'; errEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('genBtn');
+  const loadingEl = document.getElementById('loadingState');
+  btn.disabled = true; btn.textContent = 'Shaping…';
+  loadingEl.classList.add('show');
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool: 'five', oneIdea, industry })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    document.getElementById('caption').textContent = data.caption || '';
+    document.getElementById('carouselOutline').textContent = data.carousel_outline || '';
+    document.getElementById('teasedFormats').innerHTML = (data.teased_formats || []).map(t =>
+      `<div class="result-block"><div class="result-text serif-italic">◇ ${escapeHtml(t)}</div></div>`
+    ).join('');
+    document.getElementById('lockedTeaser').textContent = data.locked_teaser || '';
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    errEl.textContent = 'Something went wrong shaping your content. Please try again in a moment.';
+    errEl.classList.add('show');
+    console.error(err);
+  }
+  loadingEl.classList.remove('show');
+  btn.disabled = false; btn.textContent = 'Shape My Idea →';
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>
